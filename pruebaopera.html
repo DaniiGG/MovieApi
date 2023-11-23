@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Buscador de películas y series</title>
+  <style>
+    
+  </style>
+</head>
+<body>
+  <div id="landing-page">
+    <h1>Bienvenido al buscador de películas y series</h1>
+    <p>Ingresa al menos 3 caracteres para buscar películas o series:</p>
+    <input type="text" id="search-input">
+    <div id="search-results">
+        <div id="loader-container" style="display: none;">
+          
+        </div>
+    </div>
+  </div>
+
+  <div id="detail-page" style="display: none;">
+    <img id="poster" src="">
+    <h2 id="title"></h2>
+    <p id="director"></p>
+    <p id="actors"></p>
+    <p id="plot"></p>
+    <p id="year"></p>
+    <p id="ratings"></p>
+    <button id="back-button">Volver al listado anterior</button>
+  </div>
+
+  <script>
+    const inputBusqueda = document.getElementById('search-input');
+    const resultadosBusqueda = document.getElementById('search-results');
+    const paginaDetalle = document.getElementById('detail-page');
+    const poster = document.getElementById('poster');
+    const titulo = document.getElementById('title');
+    const director = document.getElementById('director');
+    const actores = document.getElementById('actors');
+    const argumento = document.getElementById('plot');
+    const ano = document.getElementById('year');
+    const calificaciones = document.getElementById('ratings');
+    const botonVolver = document.getElementById('back-button');
+
+    // Función para mostrar el cargador
+    function mostrarCargador() {
+      const contenedorCargador = document.getElementById('loader-container');
+      contenedorCargador.style.display = 'block';
+    }
+
+    // Función para ocultar el cargador
+    function ocultarCargador() {
+      const contenedorCargador = document.getElementById('loader-container');
+      contenedorCargador.style.display = 'none';
+    }
+
+    // Función para buscar películas o series
+    const buscarPeliculas = () => {
+      const terminoBusqueda = inputBusqueda.value;
+
+      if (terminoBusqueda.length >= 3) {
+        fetch("https://www.omdbapi.com/?apikey=9fce6812&type=movie&s=" + terminoBusqueda)
+          .then(response => response.json())
+          .then(data => {
+            resultadosBusqueda.innerHTML = '';
+
+            data.Search.forEach(pelicula => {
+              const elementoPelicula = document.createElement('div');
+              if(pelicula.Poster == 'N/A'){
+                elementoPelicula.innerHTML = "<img src=img/default.jpg><h3>" + pelicula.Title + "</h3><p>Año: " + pelicula.Year + "</p>";
+              }else{
+              elementoPelicula.innerHTML = "<img src=" + pelicula.Poster + "><h3>" + pelicula.Title + "</h3><p>Año: " + pelicula.Year + "</p>";
+              }
+              elementoPelicula.addEventListener('click', () => mostrarDetallePelicula(pelicula.imdbID));
+              resultadosBusqueda.appendChild(elementoPelicula);
+            });
+          })
+          .catch(error => {
+            console.error('Error al obtener los resultados de búsqueda:', error);
+          });
+      }
+    };
+
+    // Carga con scroll
+    let paginaActual = 1;
+    let cargando = false;
+
+    function cargarMasResultados() {
+      const alturaPagina = document.documentElement.scrollHeight;
+      const scrollSuperior = document.documentElement.scrollTop;
+      const alturaCliente = document.documentElement.clientHeight;
+
+      if (scrollSuperior + alturaCliente >= alturaPagina - 100 && !cargando) {
+        cargando = true;
+        paginaActual++;
+
+        const terminoBusqueda = inputBusqueda.value;
+
+        fetch("https://www.omdbapi.com/?apikey=9fce6812&type=movie&s=" + terminoBusqueda + "&page=" + paginaActual)
+          .then(response => response.json())
+          .then(data => {
+            cargando = false;
+
+            data.Search.forEach(pelicula => {
+              const elementoPelicula = document.createElement('div');
+              if(pelicula.Poster == 'N/A'){
+                elementoPelicula.innerHTML = "<img src=img/default.jpg><h3>" + pelicula.Title + "</h3><p>Año: " + pelicula.Year + "</p>";
+              }else{
+              elementoPelicula.innerHTML = "<img src=" + pelicula.Poster + "><h3>" + pelicula.Title + "</h3><p>Año: " + pelicula.Year + "</p>";
+              }
+              elementoPelicula.addEventListener('click', () => mostrarDetallePelicula(pelicula.imdbID));
+              resultadosBusqueda.appendChild(elementoPelicula);
+            });
+          })
+          .catch(error => {
+            cargando = false;
+            console.error('Error al cargar más resultados:', error);
+          });
+      }
+    }
+
+    window.addEventListener('scroll', cargarMasResultados);
+
+
+    inputBusqueda.addEventListener('input', buscarPeliculas);
+    
+  </script>
+</body>
+</html>
