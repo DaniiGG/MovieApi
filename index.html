@@ -134,7 +134,9 @@ height: 50px;
   <div id="landing-page">
     <h1>Bienvenido al buscador de películas y series</h1>
     <p>Ingresa al menos 3 caracteres para buscar películas o series:</p>
-    <button id="informe">Generar informe</button>
+    <button id="buscarPelis">Peliculas</button>
+    <button id="buscarSeries">Series</button>
+    <button id="informe" style="display: none;">Generar informe</button>
    <div id="barchart_values" ></div>
        
     
@@ -156,14 +158,15 @@ height: 50px;
  
 
   <div id="detail-page" style="display: none;">
+    <div id="loader-container3" style="display: none; ">
+      <div id="edp-loader" >
+            
+      </div>
+    </div>
     <div>
     <img id="poster" src="">
     <h2 id="title"></h2>
-      <div id="loader-container" style="display: none; ">
-        <div id="edp-loader" >
-              
-        </div>
-      </div>
+      
   </div>
   <div>
     <p id="director"></p>
@@ -198,21 +201,27 @@ height: 50px;
 
     const loader = document.getElementById('loader-container');
     const loader2 = document.getElementById('loader-container2');
+    const loader3 = document.getElementById('loader-container3');
     
   const informe = document.getElementById('informe');
 
 
   const peliculas = [];
+  const pelis = document.getElementById('buscarPelis');
+  const series = document.getElementById('buscarSeries');
 
-    
+
+  
 
     // Función para buscar películas o series
     const buscarPeliculas = () => {
   const terminoBusqueda = inputBusqueda.value;
+  
   loader.style.display="block";
  
 
   if (terminoBusqueda.length >= 3) {
+    informe.style.display = 'block';
     fetch("https://www.omdbapi.com/?apikey=9fce6812&type=movie&s=" + terminoBusqueda)
     
       .then(response => response.json())
@@ -226,7 +235,7 @@ height: 50px;
             elementoPelicula.innerHTML = "<img src=img/default.jpg><h3>" + pelicula.Title + "</h3><p>Año: " + pelicula.Year + "</p>";
           } else {
             elementoPelicula.innerHTML = "<img src=" + pelicula.Poster + "><h3>" + pelicula.Title + "</h3><p>Año: " + pelicula.Year + "</p>";
-            peliculas.push(pelicula.Title); // Aquí se añade la imagen al array
+            peliculas.push(pelicula.imdbID); // Aquí se añade la imagen al array
           }
           elementoPelicula.addEventListener('click', () => mostrarDetallePelicula(pelicula.imdbID));
           resultadosBusqueda.appendChild(elementoPelicula);
@@ -244,29 +253,22 @@ height: 50px;
     let cargando = false;
     let promesa=false;
 
-    function cargarMasResultados() {
+    function cargarMasPeliculas() {
       const alturaPagina = document.documentElement.scrollHeight;
       const scrollSuperior = document.documentElement.scrollTop;
       const alturaCliente = document.documentElement.clientHeight;
       
-
-      
-
       if (scrollSuperior + alturaCliente >= alturaPagina - 100 && !cargando) {
         cargando = true;
         paginaActual++;
         loader2.style.display="block";
         const terminoBusqueda = inputBusqueda.value;
-       
-        
+  
         fetch("https://www.omdbapi.com/?apikey=9fce6812&type=movie&s=" + terminoBusqueda + "&page=" + paginaActual)
           .then(response => response.json())
           .then(data => {
             cargando = false;
-            
-
-
-
+         
             data.Search.forEach(pelicula => {
               const elementoPelicula = document.createElement('div');
               if(pelicula.Poster == 'N/A'){
@@ -288,13 +290,13 @@ height: 50px;
       }
     }
 
-    window.addEventListener('scroll', cargarMasResultados);
+    window.addEventListener('scroll', cargarMasPeliculas);
 
 
 
     //Detalles de una película
     const mostrarDetallePelicula = (imdbID) => {
-      loader.style.display="block";
+      loader3.style.display="block";
       paginaDetalle.style.display = 'flex';
 
       fetch("https://www.omdbapi.com/?apikey=9fce6812&i=" + imdbID)
@@ -315,7 +317,7 @@ height: 50px;
             elementoCalificacion.innerText = calificacion.Source + ": " + calificacion.Value;
             calificaciones.appendChild(elementoCalificacion);
 
-            loader.style.display="none";
+            loader3.style.display="none";
           });
         })
         .catch(error => {
@@ -339,45 +341,63 @@ const volverALista = () => {
       //Graficas de barras
 
 
-      function dibujarGrafico() {
-      google.charts.load("current", {packages:["corechart"]});
-      google.charts.setOnLoadCallback(drawChart);
-    }
-    function drawChart() {
-      var data = google.visualization.arrayToDataTable([
-        ["Element", "Density", { role: "style" } ],
-        ["Copper", 8.94, "#b87333"],
-        ["Silver", 10.49, "silver"],
-        ["Gold", 19.30, "gold"],
-        ["Platinum", 21.45, "color: #e5e4e2"],
-        ["wwww", 21.45, "color: #e444e2"]
-      ]);
+      function obtenerTop5BoxOfficeYDibujarGrafica() {
+  const boxOfficePeliculas = [];
 
-      var view = new google.visualization.DataView(data);
-      view.setColumns([0, 1,
-                       { calc: "stringify",
-                         sourceColumn: 1,
-                         type: "string",
-                         role: "annotation" },
-                       2]);
+  // Obtener los datos de las películas
+  const peliculasPromises = peliculas.map(peli =>
+    fetch("https://www.omdbapi.com/?apikey=9fce6812&i=" + peli)
+      .then(response => response.json())
+  );
 
-      var options = {
-        title: "Películas más valoradas por imdbRating",
-        width: 600,
-        height: 400,
-        bar: {groupWidth: "95%"},
-        legend: { position: "none" },
-      };
-      var chart = new google.visualization.BarChart(document.getElementById("barchart_values"));
-      chart.draw(view, options);
-  }
+  // Esperar a que todas las promesas se completen
+  Promise.all(peliculasPromises)
+    .then(peliculas => {
+      peliculas.forEach(pelicula => {
+        const boxOffice = pelicula.BoxOffice;
+        const titulo = pelicula.Title;
+        if (boxOffice !== "N/A" && titulo) {
+          boxOfficePeliculas.push([titulo, parseFloat(boxOffice.replace(/[^0-9.]+/g, ''))]);
+        }
+      });
 
-  // informe.addEventListener('click', dibujarGrafico);
+      // Ordenar el array de películas por boxOffice de mayor a menor
+      boxOfficePeliculas.sort((a, b) => b[1] - a[1]);
 
-  informe.addEventListener('click', () => {
-  console.log('Imágenes guardadas:', peliculas);
-  // Aquí puedes realizar más acciones con el array de imágenes guardadas
-});
+      console.log("Las 5 películas con mayor box office son:");
+      console.log(boxOfficePeliculas);
+
+      // Llamar a la función para dibujar la gráfica
+      drawChart(boxOfficePeliculas);
+    })
+    .catch(error => {
+      console.log('Error al obtener información de las películas:', error);
+    });
+}
+
+function drawChart(datos) {
+  google.charts.load("current", { packages: ["corechart"] });
+  google.charts.setOnLoadCallback(() => {
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Título');
+    data.addColumn('number', 'Box Office');
+    data.addRows(datos.slice(0, 5)); // Tomar solo los primeros 5 elementos
+
+    var options = {
+      title: "Las 5 películas con mayor box office",
+      width: 600,
+      height: 400,
+      bar: { groupWidth: "95%" },
+      legend: { position: "none" },
+    };
+
+    var chart = new google.visualization.BarChart(document.getElementById("barchart_values"));
+    chart.draw(data, options);
+  });
+}
+
+
+informe.addEventListener("click", obtenerTop5BoxOfficeYDibujarGrafica);
 
 
 
