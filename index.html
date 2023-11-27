@@ -5,21 +5,27 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #ffffff;
+      background-color: #333333;
     }
 
     img{
       height: 350px;
       width: 225px;
+      transition: 0.3s ease;
     }
+    img:hover{
+      transform: scale(1.05);
 
-    #landing-page, #detail-page {
+    }
+    
+   
+    #landing-page, #detail-page, #graficos {
       max-width: 800px;
       margin: 0 auto;
       padding: 20px;
       background-color: #fff;
       border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px rgb(209, 209, 209)rgba(0, 0, 0, 0.1);
     }
 
     h1,  h3 {
@@ -28,7 +34,7 @@
     
 
     input[type="text"] {
-      width: 100%;
+      width: 95%;
       padding: 10px;
       font-size: 16px;
       border: 1px solid #ccc;
@@ -55,11 +61,7 @@
       border-radius: 5px;
     }
 
-    #detail-page img {
-      max-width: 200px;
-      height: auto;
-      margin-bottom: 10px;
-    }
+    
 
     #back-button {
       position: absolute;
@@ -72,13 +74,47 @@
       top: 0;
       left: 0;
     }
+    #back-button2 {
+      position: absolute;
+      padding: 10px 20px;
+      background-color: #333333;
+      color: #ffffff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+    }
+
 
     #back-button img{
 width: 50px;
 height: 50px;
 
     }
+    #back-button2 img{
+width: 50px;
+height: 50px;
 
+    }
+    #graficas{
+   position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  
+  background-color: rgba(0, 0, 0, 0.8); /* Fondo negro con transparencia */
+  color: white;
+  display: flex;
+  flex-flow: wrap;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+
+  column-gap: 15px;
+
+    }
 
     
 
@@ -98,6 +134,12 @@ height: 50px;
 
   column-gap: 15px;
 
+    }
+
+    #detail-page img {
+      max-width: 200px;
+      height: auto;
+      margin-bottom: 10px;
     }
 
     #loader-container{
@@ -132,20 +174,19 @@ height: 50px;
 </head>
 <body>
   <div id="landing-page">
-    <h1>Bienvenido al buscador de películas y series</h1>
+    <h1>Bienvenido a MovieApi</h1>
     <p>Ingresa al menos 3 caracteres para buscar películas o series:</p>
     <label for="eleccion">¿Que quieres ver?</label>
     <select id="eleccion">
-      <option value="todo">Todo</option>
       <option value="peliculas">Peliculas</option>
       <option value="series">Series</option>
     </select>
     <button id="informe" style="display: none;">Generar informe</button>
-   <div id="barchart_values" ></div>
-       
-    
+   
     
     <input type="text" id="search-input">
+
+    
     <div id="loader-container" style="display: none;">
       <p><div id="edp-loader" ></div></p>
     </div>
@@ -157,6 +198,13 @@ height: 50px;
             
       </div>
     </div>
+  </div>
+
+  <div id="graficas"  style="display: none;">
+    <div id="todaslaspelis" ></div>
+    <div id="top5rating" ></div>
+    <div id="top5votos" ></div>
+    <button id="back-button2"><img src="img/cruz.png"></button>
   </div>
 
  
@@ -175,6 +223,8 @@ height: 50px;
   <div>
     <p id="director"></p>
     <p id="actors"></p>
+    <p id="genero"></p>
+    <p id="tiempo"></p>
     <p id="plot"></p>
     <p id="year"></p>
     <p id="release"></p>
@@ -192,16 +242,20 @@ height: 50px;
     const inputBusqueda = document.getElementById('search-input');
     const resultadosBusqueda = document.getElementById('search-results');
     const paginaDetalle = document.getElementById('detail-page');
+    const graficas = document.getElementById('graficas');
     const poster = document.getElementById('poster');
     const titulo = document.getElementById('title');
     const director = document.getElementById('director');
     const actores = document.getElementById('actors');
+    const genero = document.getElementById('genero');
+    const tiempo = document.getElementById('tiempo');
     const argumento = document.getElementById('plot');
     const ano = document.getElementById('year');
     const salida = document.getElementById('release');
     const dinero = document.getElementById('boxoffice');
     const calificaciones = document.getElementById('ratings');
     const botonVolver = document.getElementById('back-button');
+    const botonVolver2 = document.getElementById('back-button2');
 
     const loader = document.getElementById('loader-container');
     const loader2 = document.getElementById('loader-container2');
@@ -216,7 +270,7 @@ height: 50px;
   const series = document.getElementById('buscarSeries');
 
 
-  let type='&type=';
+  let type='&type=movie';
   eleccion.addEventListener('change', function() {
   const seleccion = this.value;
   
@@ -224,9 +278,7 @@ height: 50px;
     type='&type=movie';
   } else if (seleccion === 'series') {
      type='&type=series'
-  } else if (seleccion === 'todo') {
-     type='&type=';
-  }
+  } 
   });
 
   
@@ -236,7 +288,7 @@ height: 50px;
   const terminoBusqueda = inputBusqueda.value;
   peliculas.splice(0,peliculas.length);
 
-  if (terminoBusqueda.length >= 0) {
+  if (terminoBusqueda.length >= 3) {
     loader.style.display="block";
     informe.style.display = 'block';
     
@@ -336,6 +388,8 @@ height: 50px;
           titulo.innerText = pelicula.Title;
           director.innerText = "Director: " + pelicula.Director;
           actores.innerText = "Actores: " + pelicula.Actors;
+          genero.innerText = "Género: " + pelicula.Genre;
+          tiempo.innerText = "Tiempo: " + pelicula.Runtime;
           argumento.innerText = "Sinopsis: " + pelicula.Plot;
           ano.innerText = "Año: " + pelicula.Year;
           salida.innerText = "Año de salida: " + pelicula.Released;
@@ -358,13 +412,14 @@ height: 50px;
 
 const volverALista = () => {
       paginaDetalle.style.display = 'none';
+      graficas.style.display = 'none';
     };
 
     inputBusqueda.addEventListener('input', buscarPeliculas);
 
     
     botonVolver.addEventListener('click', volverALista);
-
+    botonVolver2.addEventListener('click', volverALista);
 
 
 
@@ -373,9 +428,11 @@ const volverALista = () => {
       //Graficas de barras
 
 
-      function obtenerTop5BoxOfficeYDibujarGrafica() {
+      function Grafica() {
   const boxOfficePeliculas = [];
-
+  const ratingPeliculas = [];
+  const votesPeliculas = [];
+  graficas.style.display = 'flex';
   // Obtener los datos de las películas
   const peliculasPromises = peliculas.map(peli =>
     fetch("https://www.omdbapi.com/?apikey=9fce6812&i=" + peli)
@@ -388,55 +445,99 @@ const volverALista = () => {
       peliculas.forEach(pelicula => {
         const boxOffice = pelicula.BoxOffice;
         const titulo = pelicula.Title;
+        const rating=pelicula.imdbRating;
+        const votes=pelicula.imdbVotes;
         if (boxOffice !== "N/A" && titulo) {
           boxOfficePeliculas.push([titulo, parseFloat(boxOffice.replace(/[^0-9.]+/g, ''))]);
+        }if (rating!== "N/A" && titulo) {
+          ratingPeliculas.push([titulo, parseFloat(rating.replace(/[^0-9.]+/g, ''))]);
+        }if (votes!== "N/A" && titulo) {
+          votesPeliculas.push([titulo, parseFloat(votes.replace(/[^0-9.]+/g, ''))]);
         }
       });
 
-      // Ordenar el array de películas por boxOffice de mayor a menor
+      // Ordenar el array de películas de mayor a menor
       boxOfficePeliculas.sort((a, b) => b[1] - a[1]);
+      ratingPeliculas.sort((a, b) => b[1] - a[1]);
+      votesPeliculas.sort((a, b) => b[1] - a[1]);
 
-      console.log("Las 5 películas con mayor box office son:");
       console.log(boxOfficePeliculas);
-
+      console.log(ratingPeliculas);
+      console.log(votesPeliculas);
       // Llamar a la función para dibujar la gráfica
-      drawChart(boxOfficePeliculas);
+      drawChart(boxOfficePeliculas,1);
+      drawChart(ratingPeliculas,2);
+      drawChart(votesPeliculas,3);
     })
     .catch(error => {
       console.log('Error al obtener información de las películas:', error);
     });
 }
 
-function drawChart(datos) {
+function drawChart(datos, numero) {
   google.charts.load("current", { packages: ["corechart"] });
+  if(numero==1){
   google.charts.setOnLoadCallback(() => {
     var data = new google.visualization.DataTable();
     data.addColumn('string', 'Título');
     data.addColumn('number', 'Box Office');
-    data.addRows(datos); // Tomar solo los primeros 5 elementos
+    data.addRows(datos);
 
     var options = {
       title: "Ranking de películas con mayor box office",
-      width: 600,
-      height: 400,
+      width: 500,
+      height: 300,
       bar: { groupWidth: "95%" },
       legend: { position: "none" },
+      colors: ['#5554FA'],
     };
 
-    var chart = new google.visualization.BarChart(document.getElementById("barchart_values"));
+    var chart = new google.visualization.BarChart(document.getElementById("todaslaspelis"));
+    chart.draw(data, options);
+  });
+}if(numero==2){
+  google.charts.setOnLoadCallback(() => {
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Título');
+    data.addColumn('number', 'ImdbRating');
+    data.addRows(datos.slice(0, 5));
+
+    var options = {
+      title: "Top 5 de películas con más ranking",
+      width: 500,
+      height: 300,
+      bar: { groupWidth: "95%" },
+      legend: { position: "none" },
+      colors: ['#9A6BFA'],
+    };
+
+    var chart = new google.visualization.BarChart(document.getElementById("top5rating"));
+    chart.draw(data, options);
+  });
+}if(numero==3){
+  google.charts.setOnLoadCallback(() => {
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Título');
+    data.addColumn('number', 'ImdbVotes');
+    data.addRows(datos.slice(0, 5));
+
+    var options = {
+      title: "Top 5 de películas con más votos",
+      width: 500,
+      height: 300,
+      bar: { groupWidth: "95%" },
+      legend: { position: "none" },
+      colors: ['#FA38A3'],
+    };
+
+    var chart = new google.visualization.BarChart(document.getElementById("top5votos"));
     chart.draw(data, options);
   });
 }
+}
 
 
-informe.addEventListener("click", obtenerTop5BoxOfficeYDibujarGrafica);
-
-
-
-
-
-
-
+informe.addEventListener("click", Grafica);
 
 
 
