@@ -134,8 +134,12 @@ height: 50px;
   <div id="landing-page">
     <h1>Bienvenido al buscador de películas y series</h1>
     <p>Ingresa al menos 3 caracteres para buscar películas o series:</p>
-    <button id="buscarPelis">Peliculas</button>
-    <button id="buscarSeries">Series</button>
+    <label for="eleccion">¿Que quieres ver?</label>
+    <select id="eleccion">
+      <option value="todo">Todo</option>
+      <option value="peliculas">Peliculas</option>
+      <option value="series">Series</option>
+    </select>
     <button id="informe" style="display: none;">Generar informe</button>
    <div id="barchart_values" ></div>
        
@@ -204,6 +208,7 @@ height: 50px;
     const loader3 = document.getElementById('loader-container3');
     
   const informe = document.getElementById('informe');
+  const eleccion = document.getElementById("eleccion");
 
 
   const peliculas = [];
@@ -211,40 +216,65 @@ height: 50px;
   const series = document.getElementById('buscarSeries');
 
 
+  let type='&type=';
+  eleccion.addEventListener('change', function() {
+  const seleccion = this.value;
+  
+  if (seleccion === 'peliculas') {
+    type='&type=movie';
+  } else if (seleccion === 'series') {
+     type='&type=series'
+  } else if (seleccion === 'todo') {
+     type='&type=';
+  }
+  });
+
   
 
     // Función para buscar películas o series
     const buscarPeliculas = () => {
   const terminoBusqueda = inputBusqueda.value;
-  
-  loader.style.display="block";
- 
+  peliculas.splice(0,peliculas.length);
 
-  if (terminoBusqueda.length >= 3) {
+  if (terminoBusqueda.length >= 0) {
+    loader.style.display="block";
     informe.style.display = 'block';
-    fetch("https://www.omdbapi.com/?apikey=9fce6812&type=movie&s=" + terminoBusqueda)
     
-      .then(response => response.json())
+    fetch("https://www.omdbapi.com/?apikey=9fce6812"+type+"&s=" + terminoBusqueda)
+    
+      .then(response => response.json())//nueva promesa
       .then(data => {
         
         resultadosBusqueda.innerHTML = '';
 
-        data.Search.forEach(pelicula => {
-          const elementoPelicula = document.createElement('div');
-          if (pelicula.Poster == 'N/A') {
-            elementoPelicula.innerHTML = "<img src=img/default.jpg><h3>" + pelicula.Title + "</h3><p>Año: " + pelicula.Year + "</p>";
-          } else {
-            elementoPelicula.innerHTML = "<img src=" + pelicula.Poster + "><h3>" + pelicula.Title + "</h3><p>Año: " + pelicula.Year + "</p>";
-            peliculas.push(pelicula.imdbID); // Aquí se añade la imagen al array
-          }
-          elementoPelicula.addEventListener('click', () => mostrarDetallePelicula(pelicula.imdbID));
-          resultadosBusqueda.appendChild(elementoPelicula);
-          loader.style.display="none";
-        });
-      })
-      .catch(error => {
-        console.error('Error al obtener los resultados de búsqueda:', error);
-      });
+        if(data.Search)
+            data.Search.forEach(pelicula => {
+              const elementoPelicula = document.createElement('div');
+              const imagenURL = pelicula.Poster === 'N/A' ? 'img/default.jpg' : pelicula.Poster;
+
+              const posterImagen = new Image();
+              posterImagen.onerror = () => {
+                elementoPelicula.innerHTML = "<img src='img/default.jpg'><h3>"+pelicula.Title+"</h3><p>Año:"+pelicula.Year+"</p><p>Imagen no disponible</p>";
+              };
+              posterImagen.src = imagenURL;
+
+              if (pelicula.Poster === 'N/A') {
+                elementoPelicula.innerHTML = "<img src='img/default.jpg'><h3>"+pelicula.Title+"</h3><p>Año: "+pelicula.Year+"</p>";
+              } else {
+                elementoPelicula.appendChild(posterImagen);
+                elementoPelicula.innerHTML += "<h3>"+pelicula.Title+"</h3><p>Año: "+pelicula.Year+"</p>";
+                peliculas.push(pelicula.imdbID); // Aquí se añade la imagen al array
+              }
+
+              elementoPelicula.addEventListener('click', () => mostrarDetallePelicula(pelicula.imdbID));
+              resultadosBusqueda.appendChild(elementoPelicula);
+            });
+
+            loader.style.display = "none";
+          })
+          .catch(error => {
+            console.error('Error al obtener los resultados de búsqueda:', error);
+          });
   }
 };
 
@@ -264,25 +294,25 @@ height: 50px;
         loader2.style.display="block";
         const terminoBusqueda = inputBusqueda.value;
   
-        fetch("https://www.omdbapi.com/?apikey=9fce6812&type=movie&s=" + terminoBusqueda + "&page=" + paginaActual)
+        fetch("https://www.omdbapi.com/?apikey=9fce6812"+type+"&s=" + terminoBusqueda + "&page=" + paginaActual)
           .then(response => response.json())
           .then(data => {
             cargando = false;
-         
-            data.Search.forEach(pelicula => {
-              const elementoPelicula = document.createElement('div');
-              if(pelicula.Poster == 'N/A'){
-                elementoPelicula.innerHTML = "<img src=img/default.jpg><h3>" + pelicula.Title + "</h3><p>Año: " + pelicula.Year + "</p>";
-              }else{
-              elementoPelicula.innerHTML = "<img src=" + pelicula.Poster + "><h3>" + pelicula.Title + "</h3><p>Año: " + pelicula.Year + "</p>";
-              peliculas.push(pelicula.Title); // Aquí se añade la imagen al array
-            }
-            
-              elementoPelicula.addEventListener('click', () => mostrarDetallePelicula(pelicula.imdbID));
-              resultadosBusqueda.appendChild(elementoPelicula);
-              loader2.style.display="none";
-            });
-          })
+            if(data.Search)
+              data.Search.forEach(pelicula => {
+                const elementoPelicula = document.createElement('div');
+                if(pelicula.Poster == 'N/A'){
+                  elementoPelicula.innerHTML = "<img src=img/default.jpg><h3>" + pelicula.Title + "</h3><p>Año: " + pelicula.Year + "</p>";
+                }else{
+                elementoPelicula.innerHTML = "<img src=" + pelicula.Poster + "><h3>" + pelicula.Title + "</h3><p>Año: " + pelicula.Year + "</p>";
+                peliculas.push(pelicula.imdbID); // Aquí se añade la imagen al array
+              }
+              
+                elementoPelicula.addEventListener('click', () => mostrarDetallePelicula(pelicula.imdbID));
+                resultadosBusqueda.appendChild(elementoPelicula);
+                loader2.style.display="none";
+              });
+            })
           .catch(error => {
             cargando = false;
             console.error('Error al cargar más resultados:', error);
@@ -331,6 +361,8 @@ const volverALista = () => {
     };
 
     inputBusqueda.addEventListener('input', buscarPeliculas);
+
+    
     botonVolver.addEventListener('click', volverALista);
 
 
@@ -381,10 +413,10 @@ function drawChart(datos) {
     var data = new google.visualization.DataTable();
     data.addColumn('string', 'Título');
     data.addColumn('number', 'Box Office');
-    data.addRows(datos.slice(0, 5)); // Tomar solo los primeros 5 elementos
+    data.addRows(datos); // Tomar solo los primeros 5 elementos
 
     var options = {
-      title: "Las 5 películas con mayor box office",
+      title: "Ranking de películas con mayor box office",
       width: 600,
       height: 400,
       bar: { groupWidth: "95%" },
