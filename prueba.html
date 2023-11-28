@@ -1,6 +1,245 @@
-window.onload = function () {
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Buscador de películas y series</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #333333;
+    }
 
-const inputBusqueda = document.getElementById('search-input');
+    img{
+      height: 350px;
+      width: 225px;
+      transition: 0.3s ease;
+    }
+    img:hover{
+      transform: scale(1.05);
+
+    }
+    
+   
+    #landing-page, #detail-page, #graficos {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 2px rgb(209, 209, 209)rgba(0, 0, 0, 0.1);
+    }
+
+    h1,  h3 {
+      color: #000000;
+    }
+    
+
+    input[type="text"] {
+      width: 95%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    #search-results {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      grid-gap: 20px;
+    }
+
+    .movie-item {
+      cursor: pointer;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .movie-item img {
+      width: 100%;
+      height: auto;
+      border-radius: 5px;
+    }
+
+    
+
+    #back-button {
+      position: absolute;
+      padding: 10px 20px;
+      background-color: #333;
+      color: #ffffff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+    }
+    #back-button2 {
+      position: absolute;
+      padding: 10px 20px;
+      background-color: #333333;
+      color: #ffffff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+    }
+
+
+    #back-button img{
+width: 50px;
+height: 50px;
+
+    }
+    #back-button2 img{
+width: 50px;
+height: 50px;
+
+    }
+    #graficas{
+   position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  
+  background-color: rgba(0, 0, 0, 0.8); /* Fondo negro con transparencia */
+  color: white;
+  display: flex;
+  flex-flow: wrap;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+
+  column-gap: 15px;
+
+    }
+
+    
+
+    #detail-page{
+   position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  
+  background-color: rgba(0, 0, 0, 0.8); /* Fondo negro con transparencia */
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+
+  column-gap: 15px;
+
+    }
+
+    #detail-page img {
+      max-width: 200px;
+      height: auto;
+      margin-bottom: 10px;
+    }
+
+    #loader-container{
+      margin-left: 48vmin;
+    }
+    #loader-container2{
+      margin-left: 48vmin;
+    }
+
+
+    #edp-loader {
+	border: 10px solid #c6c6c6;
+	border-radius: 50%;
+	border-top: 10px solid #000000;
+	width: 50px;
+	height: 50px;
+	-webkit-animation: spin 2s linear infinite;
+	animation: spin 1s linear infinite;
+}
+
+@-webkit-keyframes spin {
+	0% { -webkit-transform: rotate(0deg); }
+	100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+  </style>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+</head>
+<body>
+  <div id="landing-page">
+    <h1>Bienvenido a MovieApi</h1>
+    <p>Ingresa al menos 3 caracteres para buscar películas o series:</p>
+    <label for="eleccion">¿Que quieres ver?</label>
+    <select id="eleccion">
+      <option value="peliculas">Peliculas</option>
+      <option value="series">Series</option>
+    </select>
+    <button id="informe" style="display: none;">Generar informe</button>
+   
+    
+    <input type="text" id="search-input">
+
+    
+    <div id="loader-container" style="display: none;">
+      <p><div id="edp-loader" ></div></p>
+    </div>
+    <div id="search-results">
+      
+    </div>
+    <div id="loader-container2" style="display: none;">
+      <div id="edp-loader" >
+            
+      </div>
+    </div>
+  </div>
+
+  <div id="graficas"  style="display: none;">
+    <div id="todaslaspelis" ></div>
+    <div id="top5rating" ></div>
+    <div id="top5votos" ></div>
+    <button id="back-button2"><img src="img/cruz.png"></button>
+  </div>
+
+ 
+
+  <div id="detail-page" style="display: none;">
+    <div id="loader-container3" style="display: none; ">
+      <div id="edp-loader" >
+            
+      </div>
+    </div>
+    <div>
+    <img id="poster" src="">
+    <h2 id="title"></h2>
+      
+  </div>
+  <div>
+    <p id="director"></p>
+    <p id="actors"></p>
+    <p id="genero"></p>
+    <p id="tiempo"></p>
+    <p id="plot"></p>
+    <p id="year"></p>
+    <p id="release"></p>
+    <p id="boxoffice"></p>
+    <p id="ratings"></p>
+  
+    <button id="back-button"><img src="img/cruz.png"></button>
+  </div>
+  </div>
+
+
+
+
+  <script>
+    const inputBusqueda = document.getElementById('search-input');
     const resultadosBusqueda = document.getElementById('search-results');
     const paginaDetalle = document.getElementById('detail-page');
     const graficas = document.getElementById('graficas');
@@ -24,10 +263,12 @@ const inputBusqueda = document.getElementById('search-input');
     
   const informe = document.getElementById('informe');
   const eleccion = document.getElementById("eleccion");
-  const portada = document.getElementById("portada");
 
 
   const peliculas = [];
+  const pelis = document.getElementById('buscarPelis');
+  const series = document.getElementById('buscarSeries');
+
 
   let type='&type=movie';
   eleccion.addEventListener('change', function() {
@@ -42,26 +283,14 @@ const inputBusqueda = document.getElementById('search-input');
 
   
 
-  
-
-  
-
-
-let timeoutId = null;
     // Función para buscar películas o series
     const buscarPeliculas = () => {
   const terminoBusqueda = inputBusqueda.value;
   peliculas.splice(0,peliculas.length);
-  
-  clearTimeout(timeoutId);
 
   if (terminoBusqueda.length >= 3) {
-
-    portada.style.display="none";
     loader.style.display="block";
     informe.style.display = 'block';
-    timeoutId = setTimeout(function() {
-        
     
     fetch("https://www.omdbapi.com/?apikey=9fce6812"+type+"&s=" + terminoBusqueda)
     
@@ -98,20 +327,20 @@ let timeoutId = null;
           .catch(error => {
             console.error('Error al obtener los resultados de búsqueda:', error);
           });
-        }, 1000);
   }
 };
 
     // Carga con scroll
     let paginaActual = 1;
     let cargando = false;
+    let promesa=false;
 
     function cargarMasPeliculas() {
       const alturaPagina = document.documentElement.scrollHeight;
       const scrollSuperior = document.documentElement.scrollTop;
       const alturaCliente = document.documentElement.clientHeight;
       
-      if (scrollSuperior + alturaCliente >= alturaPagina - 100 && !cargando && portada.style.display=="none") {
+      if (scrollSuperior + alturaCliente >= alturaPagina - 100 && !cargando) {
         cargando = true;
         paginaActual++;
         loader2.style.display="block";
@@ -143,6 +372,7 @@ let timeoutId = null;
       }
     }
 
+    window.addEventListener('scroll', cargarMasPeliculas);
 
 
 
@@ -184,6 +414,13 @@ const volverALista = () => {
       paginaDetalle.style.display = 'none';
       graficas.style.display = 'none';
     };
+
+    inputBusqueda.addEventListener('input', buscarPeliculas);
+
+    
+    botonVolver.addEventListener('click', volverALista);
+    botonVolver2.addEventListener('click', volverALista);
+
 
 
 
@@ -300,20 +537,10 @@ function drawChart(datos, numero) {
 }
 
 
-
-
-
-window.addEventListener('scroll', cargarMasPeliculas);
-
-
-
-inputBusqueda.addEventListener('input', buscarPeliculas);
-
-    
-    botonVolver.addEventListener('click', volverALista);
-    botonVolver2.addEventListener('click', volverALista);
-
 informe.addEventListener("click", Grafica);
 
 
-}
+
+</script>
+</body>
+</html>
