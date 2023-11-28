@@ -149,6 +149,10 @@ height: 50px;
       margin-left: 48vmin;
     }
 
+#poster-portada{
+  margin-left: 3%;
+  width: 90%;
+}
 
     #edp-loader {
 	border: 10px solid #c6c6c6;
@@ -169,6 +173,80 @@ height: 50px;
 	0% { transform: rotate(0deg); }
 	100% { transform: rotate(360deg); }
 }
+
+
+.testimonials {
+	width: 1280px;
+    height: auto;
+	margin:0 auto 0;
+	overflow: hidden;
+}
+
+.testimonials ul {
+	display: flex;
+  justify-content: center;
+	padding: 0;
+	width: 400%;
+  align-items: center;
+	animation: slide 20s infinite alternate ease-in-out;
+}
+
+.testimonials li {
+	width: 100%;
+	list-style: none;
+}
+.testimonials li:hover {
+	transform: none;
+}
+
+@keyframes slide {
+	0% {margin-left: 0%;}
+	25% {margin-left: 0%;}
+	
+	30% {margin-left: -134%;}
+	55% {margin-left: -134%;}
+	
+	60% {margin-left: -268%;}
+	95% {margin-left: -268%;}
+	
+}
+
+.testimonial-card {
+    width: 700px;
+    padding: 30px;
+    margin: 20px;
+    background-color: #f9f9f9;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    perspective: 1000px;
+}
+
+.testimonial-content {
+    padding-bottom: 20px;
+}
+
+
+.testimonial-content p {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+}
+
+.testimonial-content h3 {
+    font-size: 20px;
+    margin: 5px 40px 5px;
+    color: #444;
+}
+
+.testimonial-content span {
+    font-style: italic;
+    color: #777;
+    font-size: 14px;
+}
+.testimonial-content img{
+  width: 90%;
+}
   </style>
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
@@ -185,7 +263,42 @@ height: 50px;
    
     
     <input type="text" id="search-input">
+    <div id="portada">
 
+      <div class="testimonials">
+        <ul>
+        <li>
+        <div class="testimonial-card">
+            <div class="testimonial-content">
+                <p>"Working with this web developer was a transformative experience. Their commitment to quality and innovation elevated our project to new heights."</p>
+                <div><img src="img/spider-man-no-way-home.jpg"></div>
+                <h3>No Way Home</h3>
+                <span>Action, FC</span>
+            </div>
+        </div>
+      </li>
+      <li>
+        <div class="testimonial-card">
+            <div class="testimonial-content">
+                <p>"Working with this web developer was a transformative experience. Their commitment to quality and innovation elevated our project to new heights."</p>
+                <div><img src="img/1366_2000.png"></div>
+                <h3>tomb Rider</h3>
+                <span>Action, Adventure</span>
+            </div>
+        </div>
+      </li>
+      <li>
+        <div class="testimonial-card">
+            <div class="testimonial-content">
+                <p>"Working with this web developer was a transformative experience. Their commitment to quality and innovation elevated our project to new heights."</p>
+                <div><img src="img/spider-man-no-way-home.jpg"></div>
+                <h3>No Way Home</h3>
+                <span>Action, FC</span>
+            </div>
+        </div>
+      </li>
+
+    </div>
     
     <div id="loader-container" style="display: none;">
       <p><div id="edp-loader" ></div></p>
@@ -234,313 +347,6 @@ height: 50px;
     <button id="back-button"><img src="img/cruz.png"></button>
   </div>
   </div>
-
-
-
-
-  <script>
-    const inputBusqueda = document.getElementById('search-input');
-    const resultadosBusqueda = document.getElementById('search-results');
-    const paginaDetalle = document.getElementById('detail-page');
-    const graficas = document.getElementById('graficas');
-    const poster = document.getElementById('poster');
-    const titulo = document.getElementById('title');
-    const director = document.getElementById('director');
-    const actores = document.getElementById('actors');
-    const genero = document.getElementById('genero');
-    const tiempo = document.getElementById('tiempo');
-    const argumento = document.getElementById('plot');
-    const ano = document.getElementById('year');
-    const salida = document.getElementById('release');
-    const dinero = document.getElementById('boxoffice');
-    const calificaciones = document.getElementById('ratings');
-    const botonVolver = document.getElementById('back-button');
-    const botonVolver2 = document.getElementById('back-button2');
-
-    const loader = document.getElementById('loader-container');
-    const loader2 = document.getElementById('loader-container2');
-    const loader3 = document.getElementById('loader-container3');
-    
-  const informe = document.getElementById('informe');
-  const eleccion = document.getElementById("eleccion");
-
-
-  const peliculas = [];
-  const pelis = document.getElementById('buscarPelis');
-  const series = document.getElementById('buscarSeries');
-
-
-  let type='&type=movie';
-  eleccion.addEventListener('change', function() {
-  const seleccion = this.value;
-  
-  if (seleccion === 'peliculas') {
-    type='&type=movie';
-  } else if (seleccion === 'series') {
-     type='&type=series'
-  } 
-  });
-
-  
-
-    // Función para buscar películas o series
-    const buscarPeliculas = () => {
-  const terminoBusqueda = inputBusqueda.value;
-  peliculas.splice(0,peliculas.length);
-
-  if (terminoBusqueda.length >= 3) {
-    loader.style.display="block";
-    informe.style.display = 'block';
-    
-    fetch("https://www.omdbapi.com/?apikey=9fce6812"+type+"&s=" + terminoBusqueda)
-    
-      .then(response => response.json())//nueva promesa
-      .then(data => {
-        
-        resultadosBusqueda.innerHTML = '';
-
-        if(data.Search)
-            data.Search.forEach(pelicula => {
-              const elementoPelicula = document.createElement('div');
-              const imagenURL = pelicula.Poster === 'N/A' ? 'img/default.jpg' : pelicula.Poster;
-
-              const posterImagen = new Image();
-              posterImagen.onerror = () => {
-                elementoPelicula.innerHTML = "<img src='img/default.jpg'><h3>"+pelicula.Title+"</h3><p>Año:"+pelicula.Year+"</p><p>Imagen no disponible</p>";
-              };
-              posterImagen.src = imagenURL;
-
-              if (pelicula.Poster === 'N/A') {
-                elementoPelicula.innerHTML = "<img src='img/default.jpg'><h3>"+pelicula.Title+"</h3><p>Año: "+pelicula.Year+"</p>";
-              } else {
-                elementoPelicula.appendChild(posterImagen);
-                elementoPelicula.innerHTML += "<h3>"+pelicula.Title+"</h3><p>Año: "+pelicula.Year+"</p>";
-                peliculas.push(pelicula.imdbID); // Aquí se añade la imagen al array
-              }
-
-              elementoPelicula.addEventListener('click', () => mostrarDetallePelicula(pelicula.imdbID));
-              resultadosBusqueda.appendChild(elementoPelicula);
-            });
-
-            loader.style.display = "none";
-          })
-          .catch(error => {
-            console.error('Error al obtener los resultados de búsqueda:', error);
-          });
-  }
-};
-
-    // Carga con scroll
-    let paginaActual = 1;
-    let cargando = false;
-    let promesa=false;
-
-    function cargarMasPeliculas() {
-      const alturaPagina = document.documentElement.scrollHeight;
-      const scrollSuperior = document.documentElement.scrollTop;
-      const alturaCliente = document.documentElement.clientHeight;
-      
-      if (scrollSuperior + alturaCliente >= alturaPagina - 100 && !cargando) {
-        cargando = true;
-        paginaActual++;
-        loader2.style.display="block";
-        const terminoBusqueda = inputBusqueda.value;
-  
-        fetch("https://www.omdbapi.com/?apikey=9fce6812"+type+"&s=" + terminoBusqueda + "&page=" + paginaActual)
-          .then(response => response.json())
-          .then(data => {
-            cargando = false;
-            if(data.Search)
-              data.Search.forEach(pelicula => {
-                const elementoPelicula = document.createElement('div');
-                if(pelicula.Poster == 'N/A'){
-                  elementoPelicula.innerHTML = "<img src=img/default.jpg><h3>" + pelicula.Title + "</h3><p>Año: " + pelicula.Year + "</p>";
-                }else{
-                elementoPelicula.innerHTML = "<img src=" + pelicula.Poster + "><h3>" + pelicula.Title + "</h3><p>Año: " + pelicula.Year + "</p>";
-                peliculas.push(pelicula.imdbID); // Aquí se añade la imagen al array
-              }
-              
-                elementoPelicula.addEventListener('click', () => mostrarDetallePelicula(pelicula.imdbID));
-                resultadosBusqueda.appendChild(elementoPelicula);
-                loader2.style.display="none";
-              });
-            })
-          .catch(error => {
-            cargando = false;
-            console.error('Error al cargar más resultados:', error);
-          });
-      }
-    }
-
-    window.addEventListener('scroll', cargarMasPeliculas);
-
-
-
-    //Detalles de una película
-    const mostrarDetallePelicula = (imdbID) => {
-      loader3.style.display="block";
-      paginaDetalle.style.display = 'flex';
-
-      fetch("https://www.omdbapi.com/?apikey=9fce6812&i=" + imdbID)
-        .then(response => response.json())
-        .then(pelicula => {
-          poster.src = pelicula.Poster !== 'N/A' ? pelicula.Poster : 'img/default.jpg';
-          titulo.innerText = pelicula.Title;
-          director.innerText = "Director: " + pelicula.Director;
-          actores.innerText = "Actores: " + pelicula.Actors;
-          genero.innerText = "Género: " + pelicula.Genre;
-          tiempo.innerText = "Tiempo: " + pelicula.Runtime;
-          argumento.innerText = "Sinopsis: " + pelicula.Plot;
-          ano.innerText = "Año: " + pelicula.Year;
-          salida.innerText = "Año de salida: " + pelicula.Released;
-          dinero.innerText = "Dinero generado: " + pelicula.BoxOffice;
-
-          calificaciones.innerHTML = '';
-          pelicula.Ratings.forEach(calificacion => {
-            const elementoCalificacion = document.createElement('p');
-            elementoCalificacion.innerText = calificacion.Source + ": " + calificacion.Value;
-            calificaciones.appendChild(elementoCalificacion);
-
-            loader3.style.display="none";
-          });
-        })
-        .catch(error => {
-          console.error('Error al obtener el detalle de la película:', error);
-        });
-    };
-
-
-const volverALista = () => {
-      paginaDetalle.style.display = 'none';
-      graficas.style.display = 'none';
-    };
-
-    inputBusqueda.addEventListener('input', buscarPeliculas);
-
-    
-    botonVolver.addEventListener('click', volverALista);
-    botonVolver2.addEventListener('click', volverALista);
-
-
-
-
-
-      //Graficas de barras
-
-
-      function Grafica() {
-  const boxOfficePeliculas = [];
-  const ratingPeliculas = [];
-  const votesPeliculas = [];
-  graficas.style.display = 'flex';
-  // Obtener los datos de las películas
-  const peliculasPromises = peliculas.map(peli =>
-    fetch("https://www.omdbapi.com/?apikey=9fce6812&i=" + peli)
-      .then(response => response.json())
-  );
-
-  // Esperar a que todas las promesas se completen
-  Promise.all(peliculasPromises)
-    .then(peliculas => {
-      peliculas.forEach(pelicula => {
-        const boxOffice = pelicula.BoxOffice;
-        const titulo = pelicula.Title;
-        const rating=pelicula.imdbRating;
-        const votes=pelicula.imdbVotes;
-        if (boxOffice !== "N/A" && titulo) {
-          boxOfficePeliculas.push([titulo, parseFloat(boxOffice.replace(/[^0-9.]+/g, ''))]);
-        }if (rating!== "N/A" && titulo) {
-          ratingPeliculas.push([titulo, parseFloat(rating.replace(/[^0-9.]+/g, ''))]);
-        }if (votes!== "N/A" && titulo) {
-          votesPeliculas.push([titulo, parseFloat(votes.replace(/[^0-9.]+/g, ''))]);
-        }
-      });
-
-      // Ordenar el array de películas de mayor a menor
-      boxOfficePeliculas.sort((a, b) => b[1] - a[1]);
-      ratingPeliculas.sort((a, b) => b[1] - a[1]);
-      votesPeliculas.sort((a, b) => b[1] - a[1]);
-
-      console.log(boxOfficePeliculas);
-      console.log(ratingPeliculas);
-      console.log(votesPeliculas);
-      // Llamar a la función para dibujar la gráfica
-      drawChart(boxOfficePeliculas,1);
-      drawChart(ratingPeliculas,2);
-      drawChart(votesPeliculas,3);
-    })
-    .catch(error => {
-      console.log('Error al obtener información de las películas:', error);
-    });
-}
-
-function drawChart(datos, numero) {
-  google.charts.load("current", { packages: ["corechart"] });
-  if(numero==1){
-  google.charts.setOnLoadCallback(() => {
-    var data = new google.visualization.DataTable();
-    data.addColumn('string', 'Título');
-    data.addColumn('number', 'Box Office');
-    data.addRows(datos);
-
-    var options = {
-      title: "Ranking de películas con mayor box office",
-      width: 500,
-      height: 300,
-      bar: { groupWidth: "95%" },
-      legend: { position: "none" },
-      colors: ['#5554FA'],
-    };
-
-    var chart = new google.visualization.BarChart(document.getElementById("todaslaspelis"));
-    chart.draw(data, options);
-  });
-}if(numero==2){
-  google.charts.setOnLoadCallback(() => {
-    var data = new google.visualization.DataTable();
-    data.addColumn('string', 'Título');
-    data.addColumn('number', 'ImdbRating');
-    data.addRows(datos.slice(0, 5));
-
-    var options = {
-      title: "Top 5 de películas con más ranking",
-      width: 500,
-      height: 300,
-      bar: { groupWidth: "95%" },
-      legend: { position: "none" },
-      colors: ['#9A6BFA'],
-    };
-
-    var chart = new google.visualization.BarChart(document.getElementById("top5rating"));
-    chart.draw(data, options);
-  });
-}if(numero==3){
-  google.charts.setOnLoadCallback(() => {
-    var data = new google.visualization.DataTable();
-    data.addColumn('string', 'Título');
-    data.addColumn('number', 'ImdbVotes');
-    data.addRows(datos.slice(0, 5));
-
-    var options = {
-      title: "Top 5 de películas con más votos",
-      width: 500,
-      height: 300,
-      bar: { groupWidth: "95%" },
-      legend: { position: "none" },
-      colors: ['#FA38A3'],
-    };
-
-    var chart = new google.visualization.BarChart(document.getElementById("top5votos"));
-    chart.draw(data, options);
-  });
-}
-}
-
-
-informe.addEventListener("click", Grafica);
-
-
-
-</script>
+<script src="script.js"></script>
 </body>
 </html>
