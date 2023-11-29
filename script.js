@@ -21,6 +21,7 @@ const inputBusqueda = document.getElementById('search-input');
     const loader = document.getElementById('loader-container');
     const loader2 = document.getElementById('loader-container2');
     const loader3 = document.getElementById('loader-container3');
+    const loader4 = document.getElementById('loader-container4');
     
   const informe = document.getElementById('informe');
   const eleccion = document.getElementById("eleccion");
@@ -130,10 +131,10 @@ let timeoutId = null;
                 elementoPelicula.innerHTML = "<img src=" + pelicula.Poster + "><h3>" + pelicula.Title + "</h3><p>Año: " + pelicula.Year + "</p>";
                 peliculas.push(pelicula.imdbID); // Aquí se añade la imagen al array
               }
-              
+              loader2.style.display="none";
                 elementoPelicula.addEventListener('click', () => mostrarDetallePelicula(pelicula.imdbID));
                 resultadosBusqueda.appendChild(elementoPelicula);
-                loader2.style.display="none";
+                
               });
             })
           .catch(error => {
@@ -196,6 +197,7 @@ const volverALista = () => {
   const ratingPeliculas = [];
   const votesPeliculas = [];
   graficas.style.display = 'flex';
+  loader4.style.display="block";
   // Obtener los datos de las películas
   const peliculasPromises = peliculas.map(peli =>
     fetch("https://www.omdbapi.com/?apikey=9fce6812&i=" + peli)
@@ -231,6 +233,7 @@ const volverALista = () => {
       drawChart(boxOfficePeliculas,1);
       drawChart(ratingPeliculas,2);
       drawChart(votesPeliculas,3);
+      loader4.style.display="none";
     })
     .catch(error => {
       console.log('Error al obtener información de las películas:', error);
